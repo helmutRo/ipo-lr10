@@ -4,21 +4,23 @@ from bs4 import BeautifulSoup as bs #подключение библиотек
 
 url = "https://mgkct.minskedu.gov.by/%D0%BE-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%B4%D0%B6%D0%B5/%D0%BF%D0%B5%D0%B4%D0%B0%D0%B3%D0%BE%D0%B3%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9-%D0%BA%D0%BE%D0%BB%D0%BB%D0%B5%D0%BA%D1%82%D0%B8%D0%B2" #url сайта
 page = requests.get(url) #запрос странице
-kod = bs(page.text, "html.parser") #код сайта
+soup = bs(page.text, "html.parser") #код сайта
+id =0
 
 jsonTxt = [] #список для передачи в json файл
 Post = list()#список всех должностей
 
-allTeacher = kod.findAll('span', class_="content ttaj")#все имена преподователей и теги где находятся
-allPost = kod.findAll('svg', class_="list-unstyled")#должность преподавателя и теги где находится
+allTeacher = soup.findAll('h3')#все имена преподователей и теги где находятся
+allPost = soup.findAll('li', class_="tss")#должность преподавателя и теги где находится
 
 for post in allPost:
-    Post.append((post.parent.text).split()[0])#список всех должностей
+    Post.append(post.text)#список всех должностей
 
 for prepods in allTeacher: 
-    info = {'num':0, 'Teacher':(prepods.parent).text.split()[0], 'Post':(prepods.parent).text.split()[2]}#библиотека для каждого репозитория
-    print(f"{info['num']}. преподователь: {info['Teacher']}; должность: {info['Post']};") #вывод на экран
+    info = {'num':id+1, 'Teacher':(prepods.parent).text.split()[0]+ ' '+ (prepods.parent).text.split()[1]+' '+(prepods.parent).text.split()[2], 'Post':Post[id]}#библиотека для каждого репозитория
+    print(f"{info['num']}. преподователь: {info['Teacher']}; {info['Post']};") #вывод на экран
     jsonTxt.append(info)#добавление информации в список для json файла
+    id+=1
 
 with open("data.json", "w", encoding='utf-8') as file:
     json.dump(jsonTxt, file, indent=4, ensure_ascii=True)#запись в json
